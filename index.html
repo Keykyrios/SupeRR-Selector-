@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RR Pressure Reliability Dashboard | IPL 2027</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0a;--surf:#141414;--ink:#f2f0ea;--mute:rgba(242,240,234,.55);--line:rgba(242,240,234,.14);--acc:#e0377f;--acc-ink:#0a0a0a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit;margin:0;border-radius:0}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.55 Archivo,system-ui,sans-serif;overflow-x:hidden}
+h1,h2,h3,.disp{font-family:Unbounded,Archivo,sans-serif;font-weight:700;letter-spacing:-.02em;line-height:1.05}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+section{padding:110px 0;border-top:1px solid var(--line)}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-bottom:18px;font-weight:600}
+h2{font-size:clamp(28px,4.4vw,52px);max-width:16em;margin-bottom:22px}
+.lead{color:var(--mute);max-width:46em;margin-bottom:48px}
+/* hero */
+.hero{position:relative;min-height:100dvh;display:flex;flex-direction:column;justify-content:space-between;padding:28px 0 120px;border:0;overflow:hidden}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero .wrap{position:relative;z-index:2;width:100%}
+.strip{display:flex;justify-content:space-between;gap:16px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.strip b{color:var(--ink);font-weight:600}
+.hero h1{font-size:clamp(40px,9vw,120px);max-width:9em;margin:0 0 26px}
+.hero h1 em{font-style:normal;color:var(--acc)}
+.hero p{max-width:34em;color:var(--ink);opacity:.8;margin-bottom:32px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:15px 26px;font:600 14px Archivo,sans-serif;text-decoration:none;border:1px solid var(--ink);color:var(--ink);background:transparent;transition:background .3s,color .3s,border-color .3s}
+.btn.p{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.btn:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line)}
+.stat{padding:36px 26px;border-right:1px solid var(--line)}
+.stat:last-child{border:0}
+.stat:nth-child(even){padding-top:80px}
+.stat .n{font:700 clamp(34px,5vw,64px)/1 Unbounded,sans-serif;color:var(--ink)}
+.stat .n small{font-size:.4em;color:var(--acc);margin-left:4px}
+.stat .l{margin-top:12px;color:var(--mute);font-size:14px}
+/* hover transition: models */
+.models{display:grid;grid-template-columns:1fr 1.1fr;border:1px solid var(--line)}
+.mlist button{all:unset;box-sizing:border-box;display:flex;gap:20px;align-items:baseline;width:100%;padding:22px 26px;border-bottom:1px solid var(--line);cursor:pointer;position:relative;overflow:hidden;transition:color .35s}
+.mlist button:last-child{border-bottom:0}
+.mlist button::before{content:"";position:absolute;inset:0;background:var(--acc);transform:translateY(101%);transition:transform .45s cubic-bezier(.7,0,.2,1);z-index:0}
+.mlist button.on::before{transform:none}
+.mlist button.on{color:var(--acc-ink)}
+.mlist span{position:relative;z-index:1}
+.mlist .id{font:700 14px Unbounded,sans-serif;min-width:34px}
+.mlist .nm{font-weight:600}
+.mpanel{padding:36px;background:var(--surf);position:relative;min-height:320px}
+.mpanel .pane{position:absolute;inset:36px;opacity:0;transform:translateY(16px);transition:opacity .4s,transform .4s;pointer-events:none}
+.mpanel .pane.on{opacity:1;transform:none;pointer-events:auto}
+.mpanel h3{font-size:24px;margin-bottom:18px}
+.kv{border-top:1px solid var(--line);padding:14px 0}
+.kv small{display:block;color:var(--acc);text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:600;margin-bottom:4px}
+/* leaderboard */
+.tabs{display:inline-flex;border:1px solid var(--line);margin-bottom:28px}
+.tabs button{all:unset;box-sizing:border-box;padding:12px 26px;cursor:pointer;font-weight:600;font-size:14px;transition:background .3s,color .3s}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+.lb{border:1px solid var(--line);overflow-x:auto}
+.row{display:grid;grid-template-columns:36px minmax(150px,1.3fr) minmax(160px,1.6fr) repeat(6,38px) minmax(120px,1fr);align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid var(--line);min-width:820px;position:relative}
+.row:last-child{border:0}
+.row.h{color:var(--mute);font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:var(--surf)}
+.row:not(.h):hover{background:var(--surf)}
+.row .rk{font:700 13px Unbounded,sans-serif;color:var(--mute)}
+.row .pl{font-weight:600}
+.bar{height:22px;background:rgba(242,240,234,.06);position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;width:0;background:var(--acc);transition:width 1s cubic-bezier(.2,.7,.2,1)}
+.bar b{position:absolute;right:8px;top:2px;font-size:12px;font-weight:600;mix-blend-mode:normal}
+.cell{height:28px;display:grid;place-items:center;font-size:12px;font-weight:600;border:1px solid var(--line)}
+.st{font-size:12px;color:var(--mute)}
+.st.rel{color:var(--acc);font-weight:600}
+.note{margin-top:18px;color:var(--mute);font-size:14px}
+/* call board */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line)}
+.card{position:relative;overflow:hidden;padding:30px 26px 34px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:300px;display:flex;flex-direction:column;gap:10px;transition:color .4s}
+.card::before{content:"";position:absolute;inset:0;background:var(--ink);clip-path:inset(100% 0 0 0);transition:clip-path .5s cubic-bezier(.7,0,.2,1);z-index:0}
+.card:hover::before,.card:focus-within::before{clip-path:inset(0)}
+.card:hover,.card:focus-within{color:var(--bg)}
+.card>*{position:relative;z-index:1}
+.tag{font-size:11px;letter-spacing:.14em;font-weight:600;text-transform:uppercase;color:var(--acc)}
+.tag.avoid{color:#ff6b57}
+.card:hover .tag,.card:focus-within .tag{color:#a11a55}
+.card h3{font-size:22px}
+.role{color:var(--mute);font-size:14px}
+.card:hover .role,.card:focus-within .role{color:rgba(10,10,10,.7)}
+.card p{font-size:14px}
+.gate{margin-top:auto;font-size:13px;border-top:1px solid currentColor;padding-top:10px;opacity:.75}
+/* plan */
+.plan{border:1px solid var(--line)}
+.slot{display:grid;grid-template-columns:130px 1fr 1fr;gap:20px;padding:22px 26px;border-bottom:1px solid var(--line);align-items:baseline}
+.slot:last-child{border:0}
+.slot .s{font:700 13px Unbounded,sans-serif;color:var(--acc)}
+.slot .pp{font:700 20px Unbounded,sans-serif}
+.slot .fb{color:var(--mute);font-size:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:64px}
+.two h3{font-size:20px;margin-bottom:16px}
+.two li{list-style:none;padding:12px 0;border-top:1px solid var(--line);font-size:14px;color:var(--mute)}
+.two li b{color:var(--ink)}
+footer{padding:60px 0 150px;border-top:1px solid var(--line);color:var(--mute);font-size:13px}
+/* dock */
+.dock{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;align-items:flex-end;gap:6px;padding:8px;background:var(--surf);border:1px solid var(--line);z-index:50}
+.dock a{display:block;padding:12px 16px;color:var(--mute);text-decoration:none;font:600 12px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;border:1px solid transparent;transform-origin:bottom center;will-change:transform;white-space:nowrap}
+.dock a.on{color:var(--acc-ink);background:var(--acc)}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s,transform .8s}
+.reveal.in{opacity:1;transform:none}
+@media(max-width:820px){
+ .stats{grid-template-columns:1fr 1fr}.stat:nth-child(even){padding-top:36px}.stat{border-bottom:1px solid var(--line)}
+ .models,.two{grid-template-columns:1fr}.mpanel{min-height:380px}
+ .grid{grid-template-columns:1fr}.slot{grid-template-columns:1fr;gap:6px}
+ .dock a{padding:10px 9px;font-size:10px;letter-spacing:.04em}
+ section{padding:80px 0}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}.reveal{opacity:1;transform:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="hero" id="top">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="wrap strip"><span><b>SupeRR Selector</b> / Season 2 / Round 1</span><span>Rajasthan Royals | IPL 2027 Auction</span></div>
+  <div class="wrap">
+    <h1>Who holds their <em>nerve</em> when it gets loud.</h1>
+    <p>Six independent pressure models, one consensus. Who Rajasthan Royals should back at the 16 December auction in Goa.</p>
+    <div class="cta"><a class="btn p" href="#call">See the call</a><a class="btn" href="#board">Read the leaderboards</a></div>
+  </div>
+</header>
+
+<section id="call">
+  <div class="wrap">
+    <div class="eyebrow reveal">The numbers</div>
+    <h2 class="reveal">Back wicket-takers for the pressure overs, and a left-hand middle order that does not fold.</h2>
+    <p class="lead reveal">A player who ranks well under several different definitions is reliable under pressure. A player who ranks well under one is a definition artefact. Scores are cohort rankings, not forecasts.</p>
+    <div class="stats reveal">
+      <div class="stat"><div class="n">6</div><div class="l">models, 6 pressure definitions</div></div>
+      <div class="stat"><div class="n">9<small>/ 10</small></div><div class="l">top-10 names hold when any one model is dropped (typical)</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">open slots: 3 Indian, 3 overseas</div></div>
+      <div class="stat"><div class="n">27.05<small>cr</small></div><div class="l">INR purse, 19 retained</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="models">
+  <div class="wrap">
+    <h2 class="reveal">Six models. Six ways to define pressure.</h2>
+    <p class="lead reveal">Hover a model. Each is reproducible from ball-by-ball state; each draws the line differently. Players are then ranked by a Borda count: rank 1 earns 10 points, rank 10 earns 1, absent earns 0. Maximum 60.</p>
+    <div class="models reveal">
+      <div class="mlist" id="mlist"></div>
+      <div class="mpanel" id="mpanel"></div>
+    </div>
+  </div>
+</section>
+
+<section id="board">
+  <div class="wrap">
+    <div class="eyebrow reveal">Consensus</div>
+    <h2 class="reveal">The pressure leaderboard.</h2>
+    <p class="lead reveal">Cells show the rank inside each model's top 10; a stronger fill means a higher rank. A dash means outside that top 10.</p>
+    <div class="tabs reveal" id="tabs"><button class="on" data-k="bat">Batters</button><button data-k="bowl">Bowlers</button></div>
+    <div class="lb reveal" id="lb"></div>
+    <p class="note" id="lbnote"></p>
+  </div>
+</section>
+
+<section id="squad">
+  <div class="wrap">
+    <div class="eyebrow reveal">Auction board</div>
+    <h2 class="reveal">Released-pool candidates, by verdict.</h2>
+    <p class="lead reveal">RR already hold elite pressure openers (Jaiswal, Sooryavanshi) and a proven finisher in Ferreira. The soft spot is pace control in overs 16 to 20, and left-hand middle-order cover left with Hetmyer.</p>
+    <div class="grid reveal" id="cards"></div>
+  </div>
+</section>
+
+<section id="plan">
+  <div class="wrap">
+    <h2 class="reveal">Six slots, in order.</h2>
+    <div class="plan reveal" id="slots"></div>
+    <div class="two reveal">
+      <div><h3>Gates before every bid</h3><ul>
+        <li><b>Registration.</b> A name on the released list is not proof of auction registration.</li>
+        <li><b>Medical and workload.</b> Mandatory for all fast bowlers, a hard gate for Pathirana.</li>
+        <li><b>Role.</b> Name the batting slot or overs window first. No second player for the same role.</li>
+        <li><b>Price.</b> The index is scouting evidence, not a valuation. Keep purse for six slots.</li></ul></div>
+      <div><h3>Limitations</h3><ul>
+        <li>Pressure is a state-based proxy, not a measure of psychology.</li>
+        <li>Ranks are cohort-relative, not fully adjusted for position, venue, opposition or pace versus spin.</li>
+        <li>Several top names have T20I-only samples. Small samples (100 to 150 balls) drive several bowler cases.</li>
+        <li>Prices, injuries and registration come from public announcements and must be rechecked on auction day.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">Evidence window: IPL and T20I, 22 Jan 2022 to 1 Nov 2026. Prepared 18 November 2026. Source: RR SupeRR Selector Season 2 Round 1 data pack, IPL retention and released lists (iplt20.com).</div></footer>
+
+<nav class="dock" id="dock" aria-label="Sections">
+  <a href="#top">Top</a><a href="#call">Call</a><a href="#models">Models</a><a href="#board">Board</a><a href="#squad">Squad</a><a href="#plan">Plan</a>
+</nav>
+
+<script>
+const M=[
+["M1","IPL 2022-26 only","Over 16+; or chase from over 11; or knockout from over 11.","Percentile blend of pressure SR, average, 20+ rate, death SR; sample-confidence multiplier."],
+["M2","IPL + T20I","Chase RRR 9+ from over 6; or 5+ down from over 10; or death with 3+ down.","Percentile vs the player’s own non-pressure baseline; shrunk by n/(n+60)."],
+["M3","IPL x1.25, T20I x1.0, other x0.75","High RRR in chase; wickets-down states; death phase from ball 90.","Competition-weighted percentile composite pulled to 50 on small samples."],
+["M4","IPL + T20I","Death overs (16+), or chase RRR 9+ with 1 to 15 overs left.","Self-baseline uplift + pressure rate + match consistency; shrinkage below 200 balls."],
+["M5","IPL + T20I","Four pre-delivery signals: contested chase, chase finish, death with wickets down, collapse.","Weighted percentiles with pooled-rate smoothing priors."],
+["M6","IPL + T20I","Pre-delivery state: RRR, wickets in hand, balls left; separate rules per innings.","Role-specific z-score composite, reliability multiplier, min-max scaled."]];
+const BAT=[["Shashank Singh",[0,2,4,1,3,1],44,"5/6","Retained (PBKS)"],["Babar Azam",[0,3,0,9,1,3],28,"4/6","T20I only. No IPL pressure balls"],["Suryakumar Yadav",[2,0,2,0,9,5],26,"4/6","Retained (MI)"],["Rohit Sharma",[0,1,0,4,0,2],26,"3/6","Retained (MI)"],["Jos Buttler",[3,0,1,10,0,7],23,"4/6","Retained (GT)"],["Shreyas Iyer",[1,8,0,0,2,0],22,"3/6","Retained (PBKS)"],["Najibullah Zadran",[0,6,0,3,0,8],16,"3/6","Not retained. Registration unconfirmed"],["Dinesh Karthik",[0,0,0,2,6,0],14,"2/6","Verify status"],["Shubman Gill",[8,4,0,0,0,9],12,"3/6","Retained (GT)"],["Liam Livingstone",[4,0,0,6,0,0],12,"2/6","Verify status"]];
+const BOWL=[["Mohammad Nawaz",[0,2,0,1,1,3],37,"4/6","T20I only. Not an IPL player in pack"],["Jamie Overton",[0,0,1,3,4,6],30,"4/6","Retained (CSK)"],["Abrar Ahmed",[0,6,0,2,5,2],29,"4/6","T20I only. Not an IPL player in pack"],["Umran Malik",[4,0,7,0,3,0],19,"3/6","RELEASED. In auction pool"],["Benjamin Sears",[0,0,0,7,2,7],17,"3/6","T20I only. Unconfirmed"],["Matthew Humphreys",[0,1,0,0,0,4],17,"2/6","Unretained. Registration unconfirmed"],["Sunil Narine",[1,10,0,0,9,8],16,"4/6","Retained (KKR)"],["Sufiyan Muqeem",[0,0,0,8,0,1],13,"2/6","T20I only. Not an IPL player in pack"],["George Linde",[0,4,0,0,0,5],13,"2/6","RELEASED. In auction pool"],["Kuldeep Yadav",[0,0,3,0,7,0],12,"2/6","Retained (LSG)"]];
+const NOTE={bat:"No top-10 batter is a clean auction target: most are retained elsewhere. Shashank Singh is the only batter in five models' top 10. Babar Azam's pressure balls are all T20I, so he is a benchmark, not an IPL signal.",bowl:"Umran Malik is the highest-ranked bowler who is both released and IPL-proven in the pack. Nawaz and Abrar lead on points but have no IPL pressure sample. Linde is released but rests on 96 to 101 pressure balls."};
+const CARDS=[
+["Back","Umran Malik","Indian pace, pressure overs","Top 10 or near in 4 of 6 models. M5: 17 wkts from 135 balls, economy 7.11 vs 9.78 baseline. No overseas slot used.","Gate: death sample only 61 balls. Confirm fitness."],
+["Back","Spencer Johnson","Overseas left-arm fast","Three definitions, same answer: economy 8.58 to 8.70 vs 9.74 to 9.86 baseline, about 10 wkts per 100 balls.","Gate: 120 to 142 balls. Foulkes is the alternative, not an addition."],
+["Back","Nitish Rana","Indian left-hand middle order","Pressure SR 157 to 166 in all six models, always above his own baseline. Reliable depth, not an elite finisher.","Gate: ranks 21 to 64 in his cohorts. Chase SR 139.6. Bid with discipline."],
+["Conditional","Matheesha Pathirana","Overseas death specialist","Largest sample in the pool (547 to 747 balls), 33 wkts in 403 death balls. Economy only matches baseline in M2 and M5.","Gate: June 2026 hamstring surgery. Independent medical clearance is mandatory."],
+["Conditional","Najibullah Zadran","Overseas left-hand No.5","Top 10 in M2, M4, M6. Pressure SR 175 to 181 vs 108.4 baseline in M2. Direct Hetmyer replacement.","Gate: 128 to 143 balls, no IPL-only sample, registration unconfirmed."],
+["Avoid premium","Shimron Hetmyer","Released by RR","Four models, four below-par verdicts (M1 #54, M2 #98, M4 #88) despite 500 to 800 pressure balls.","Do not pay for continuity."]];
+const SLOTS=[["Indian 1","Umran Malik","Avesh Khan, only as price-led depth"],["Indian 2","Nitish Rana","Shahrukh Khan or Rahane, if Rana’s price exceeds role value"],["Indian 3","Keep flexible","Best value among Shahrukh Khan, Rahane or a bowling-depth option"],["Overseas 1","Spencer Johnson","Zak Foulkes"],["Overseas 2","Pathirana, only if cleared and under ceiling","Mustafizur Rahman, price-sensitive"],["Overseas 3","Najibullah Zadran, if registered","Hold the slot and purse"]];
+const $=s=>document.querySelector(s);
+
+/* hover-transition: models */
+$("#mlist").innerHTML=M.map((m,i)=>`<button data-i="${i}" class="${i?"":"on"}"><span class="id">${m[0]}</span><span class="nm">${m[1]}</span></button>`).join("");
+$("#mpanel").innerHTML=M.map((m,i)=>`<div class="pane ${i?"":"on"}"><h3>${m[0]}: ${m[1]}</h3><div class="kv"><small>Pressure is flagged when</small>${m[2]}</div><div class="kv"><small>Scoring core</small>${m[3]}</div></div>`).join("");
+const btns=[...document.querySelectorAll("#mlist button")],panes=[...document.querySelectorAll(".pane")];
+btns.forEach((b,i)=>["mouseenter","focus","click"].forEach(ev=>b.addEventListener(ev,()=>{btns.forEach((x,j)=>{x.classList.toggle("on",i===j);panes[j].classList.toggle("on",i===j)})})));
+
+/* leaderboard */
+function render(k){
+  const d=k==="bat"?BAT:BOWL;
+  let h=`<div class="row h"><span>#</span><span>Player</span><span>Borda points (max 60)</span>${M.map(m=>`<span style="text-align:center">${m[0]}</span>`).join("")}<span>2027 status</span></div>`;
+  d.forEach((r,i)=>{h+=`<div class="row"><span class="rk">${i+1}</span><span class="pl">${r[0]}</span><span class="bar"><i data-w="${r[2]/60*100}"></i><b>${r[2]} pts, ${r[3]}</b></span>${r[1].map(v=>v?`<span class="cell" style="background:rgba(224,55,127,${(.12+(11-v)*.088).toFixed(2)})">${v}</span>`:`<span class="cell" style="color:var(--mute)">-</span>`).join("")}<span class="st ${r[4].startsWith("RELEASED")?"rel":""}">${r[4]}</span></div>`});
+  $("#lb").innerHTML=h;$("#lbnote").textContent=NOTE[k];
+  requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll(".bar i").forEach(e=>e.style.width=e.dataset.w+"%")));
+}
+render("bat");
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));render(b.dataset.k)});
+
+$("#cards").innerHTML=CARDS.map(c=>`<article class="card" tabindex="0"><span class="tag ${c[0]==="Avoid premium"?"avoid":""}">${c[0]}</span><h3>${c[1]}</h3><div class="role">${c[2]}</div><p>${c[3]}</p><div class="gate">${c[4]}</div></article>`).join("");
+$("#slots").innerHTML=SLOTS.map(s=>`<div class="slot"><span class="s">${s[0]}</span><span class="pp">${s[1]}</span><span class="fb">Fallback: ${s[2]}</span></div>`).join("");
+
+/* reveal + scroll spy */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll(".reveal").forEach(e=>io.observe(e));
+const links=[...document.querySelectorAll("#dock a")];
+const spy=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+e.target.id))}),{rootMargin:"-45% 0px -50% 0px"});
+["top","call","models","board","squad","plan"].forEach(id=>spy.observe(document.getElementById(id)));
+
+/* magnetic dock */
+const dock=$("#dock"),still=matchMedia("(prefers-reduced-motion:reduce)").matches;
+if(!still&&matchMedia("(pointer:fine)").matches){
+  dock.addEventListener("mousemove",e=>links.forEach(a=>{const r=a.getBoundingClientRect(),cx=r.left+r.width/2,dx=e.clientX-cx,s=1+.55*Math.exp(-(dx*dx)/(2*70*70));a.style.transform=`translateX(${(dx*.12*(s-1)).toFixed(1)}px) scale(${s.toFixed(3)})`}));
+  dock.addEventListener("mouseleave",()=>links.forEach(a=>a.style.transform=""));
+}
+
+/* WebGL liquid hero */
+(function(){
+  const c=$("#gl");if(still)return;
+  const gl=c.getContext("webgl");if(!gl)return;
+  const vs="attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+  const fs=`precision mediump float;uniform vec2 r,m;uniform float t;
+  float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+  float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+  float fb(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p*=2.;a*=.5;}return v;}
+  void main(){vec2 uv=gl_FragCoord.xy/r;vec2 q=uv*vec2(r.x/r.y,1.)*2.2;
+   vec2 d=uv-m;float rip=exp(-dot(d,d)*18.)*.6;
+   vec2 w=vec2(fb(q+t*.07),fb(q+vec2(5.2,1.3)-t*.06));
+   float f=fb(q+2.2*w+rip*vec2(sin(t*2.),cos(t*2.)));
+   float l=smoothstep(.45,.85,f);
+   vec3 bg=vec3(.039),ac=vec3(.878,.216,.498);
+   vec3 col=bg+ac*l*.55+vec3(.95,.94,.92)*pow(l,6.)*.12;
+   col*=.55+.45*smoothstep(1.2,.2,uv.y*.9+(1.-uv.x)*.2);
+   gl_FragColor=vec4(col,1.);}`;
+  const mk=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o};
+  const pg=gl.createProgram();gl.attachShader(pg,mk(gl.VERTEX_SHADER,vs));gl.attachShader(pg,mk(gl.FRAGMENT_SHADER,fs));gl.linkProgram(pg);gl.useProgram(pg);
+  gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const lp=gl.getAttribLocation(pg,"p");gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,2,gl.FLOAT,false,0,0);
+  const U=n=>gl.getUniformLocation(pg,n);let mx=.5,my=.5,tx=.5,ty=.5,vis=true;
+  const size=()=>{const k=Math.min(devicePixelRatio,1.5);c.width=c.clientWidth*k;c.height=c.clientHeight*k;gl.viewport(0,0,c.width,c.height)};
+  size();addEventListener("resize",size);
+  addEventListener("pointermove",e=>{const b=c.getBoundingClientRect();tx=(e.clientX-b.left)/b.width;ty=1-(e.clientY-b.top)/b.height});
+  new IntersectionObserver(e=>vis=e[0].isIntersecting).observe(c);
+  (function f(ts){if(vis){mx+=(tx-mx)*.06;my+=(ty-my)*.06;gl.uniform2f(U("r"),c.width,c.height);gl.uniform2f(U("m"),mx,my);gl.uniform1f(U("t"),ts/1000);gl.drawArrays(gl.TRIANGLES,0,3)}requestAnimationFrame(f)})(0);
+})();
+</script>
+</body>
+</html>
